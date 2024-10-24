@@ -1,21 +1,21 @@
-package com.c1se62.clinic_booking.entity;
-import jakarta.persistence.*;
+package com.c1se62.clinic_booking.dto.response;
+
+import jakarta.persistence.ElementCollection;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.Set;
-
-@Entity
 @Data
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int userId;
+@NoArgsConstructor
+@Builder
+public class UserResponse {
+    private int id;
     private String username;
     private String password;
     private String firstName;
@@ -23,6 +23,5 @@ public class User {
     private String email;
     private String phoneNumber;
     @ElementCollection
-    private Set<String> role;
-    private Boolean isActive;
+    private Set<String> roles;
 }
