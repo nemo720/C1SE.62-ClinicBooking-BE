@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -43,16 +42,16 @@ public class UserController {
         if(user == null){
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        User user1 = new User();
-        user1.setUsername(user.getUsername());
-        user1.setPassword(user.getPassword());
-        user1.setFirstName(user.getFirstName());
-        user1.setLastName(user.getLastName());
-        user1.setEmail(user.getEmail());
-        user1.setPhoneNumber(user.getPhoneNumber());
-        user1.setRole(user.getRole());
-        userServices.save(user1);
-        return new ResponseEntity<>(user1,HttpStatus.OK);
+        User foundUser = new User();
+        foundUser.setUsername(user.getUsername());
+        foundUser.setPassword(user.getPassword());
+        foundUser.setFirstName(user.getFirstName());
+        foundUser.setLastName(user.getLastName());
+        foundUser.setEmail(user.getEmail());
+        foundUser.setPhoneNumber(user.getPhoneNumber());
+        foundUser.setRole(user.getRole());
+        userServices.save(foundUser);
+        return new ResponseEntity<>(foundUser,HttpStatus.OK);
     }
 
     @GetMapping("/{name}")
@@ -65,27 +64,24 @@ public class UserController {
     }
     @PutMapping("/{name}")
     public ResponseEntity<User> update(@PathVariable String name, @RequestBody User user){
-        User user1 = userServices.findByUsername(name);
-        if(user1 == null){
+        User foundUser = userServices.findByUsername(name);
+        if(foundUser == null){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        user1.setUsername(user.getUsername());
-        user1.setPassword(user.getPassword());
-        user1.setFirstName(user.getFirstName());
-        user1.setLastName(user.getLastName());
-        user1.setEmail(user.getEmail());
-        user1.setPhoneNumber(user.getPhoneNumber());
-        user1.setRole(user.getRole());
-        userServices.save(user1);
-        return new ResponseEntity<>(user1,HttpStatus.OK);
+        foundUser.setFirstName(user.getFirstName());
+        foundUser.setLastName(user.getLastName());
+        foundUser.setEmail(user.getEmail());
+        foundUser.setPhoneNumber(user.getPhoneNumber());
+        userServices.save(foundUser);
+        return new ResponseEntity<>(foundUser,HttpStatus.OK);
     }
     @DeleteMapping("/{name}")
     public ResponseEntity<User> delete(@PathVariable String name){
-        User user1 = userServices.findByUsername(name);
-        if(user1 == null){
+        User foundUser = userServices.findByUsername(name);
+        if(foundUser == null){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         userServices.delete(name);
-        return new ResponseEntity<>(user1,HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(foundUser,HttpStatus.NO_CONTENT);
     }
 }
