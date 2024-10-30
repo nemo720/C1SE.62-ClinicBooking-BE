@@ -1,36 +1,91 @@
 package com.c1se62.clinic_booking.controller;
 
-import com.c1se62.clinic_booking.dto.request.LoginRequest;
-import com.c1se62.clinic_booking.dto.request.RegisterRequest;
-import com.c1se62.clinic_booking.dto.response.AuthenticationResponse;
-import com.c1se62.clinic_booking.dto.response.UserResponse;
+import com.c1se62.clinic_booking.entity.User;
 import com.c1se62.clinic_booking.service.AuthenticationServices.AuthenticationServices;
 import com.c1se62.clinic_booking.service.UserServices.UserServices;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
 @RestController
-@Slf4j
-@RequestMapping("/user")
+@CrossOrigin("*")
+@RequestMapping("/api/user")
 public class UserController {
     @Autowired
-    private UserServices userServices;
+    UserServices userServices;
+
     @Autowired
     private AuthenticationServices authenticationService;
-    @PostMapping("/register")
-    public UserResponse registerUser(@RequestBody RegisterRequest request) {
-            return userServices.register(request);
+
+    @GetMapping("/listSearchName")
+    public ResponseEntity<List<User>> findAll(@RequestParam String name){
+        List<User> userList = userServices.findUserByNameContaining(name);
+        if(userList.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(userList, HttpStatus.OK);
     }
-    @PostMapping("/login")
-    AuthenticationResponse authenticate(@RequestBody LoginRequest authenticationRequest) {
-        AuthenticationResponse result = authenticationService.authenticated(authenticationRequest);
-return result;
+    @GetMapping("/list")
+    public ResponseEntity<List<User>> findAll(){
+        List<User> userList = userServices.findAll();
+        if(userList.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(userList,HttpStatus.OK);
+    }
+    @PostMapping("/create")
+    public ResponseEntity<User> create(@RequestBody User user){
+        if(user == null){
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        User user1 = new User();
+        user1.setUsername(user.getUsername());
+        user1.setPassword(user.getPassword());
+        user1.setFirstName(user.getFirstName());
+        user1.setLastName(user.getLastName());
+        user1.setEmail(user.getEmail());
+        user1.setPhoneNumber(user.getPhoneNumber());
+        user1.setRole(user.getRole());
+        userServices.save(user1);
+        return new ResponseEntity<>(user1,HttpStatus.OK);
+    }
+
+    @GetMapping("/{name}")
+    public ResponseEntity<User> detail(@PathVariable String name){
+        User user = userServices.findByUsername(name);
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(user,HttpStatus.OK);
+    }
+    @PutMapping("/{name}")
+    public ResponseEntity<User> update(@PathVariable String name, @RequestBody User user){
+        User user1 = userServices.findByUsername(name);
+        if(user1 == null){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        user1.setUsername(user.getUsername());
+        user1.setPassword(user.getPassword());
+        user1.setFirstName(user.getFirstName());
+        user1.setLastName(user.getLastName());
+        user1.setEmail(user.getEmail());
+        user1.setPhoneNumber(user.getPhoneNumber());
+        user1.setRole(user.getRole());
+        userServices.save(user1);
+        return new ResponseEntity<>(user1,HttpStatus.OK);
+    }
+    @DeleteMapping("/{name}")
+    public ResponseEntity<User> delete(@PathVariable String name){
+        User user1 = userServices.findByUsername(name);
+        if(user1 == null){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        userServices.delete(name);
+        return new ResponseEntity<>(user1,HttpStatus.NO_CONTENT);
     }
 }

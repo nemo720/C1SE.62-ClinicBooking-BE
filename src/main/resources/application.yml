@@ -15,7 +15,3 @@ server:
 
 jwt:
   signerKey: "mqa0vyq2l6R+h8A421RSbG572s14p8J6QU7ofdhMH3LS9ZhUlJ7SWjz+O/ozXo6b"
-
-
-
-
