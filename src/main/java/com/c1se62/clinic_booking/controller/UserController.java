@@ -17,18 +17,13 @@ import java.util.List;
 public class UserController {
     @Autowired
     UserServices userServices;
-
     @Autowired
     private AuthenticationServices authenticationService;
 
-    @GetMapping("/listSearchName")
-    public ResponseEntity<List<User>> findAll(@RequestParam String name){
-        List<User> userList = userServices.findUserByNameContaining(name);
-        if(userList.isEmpty()){
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-        return new ResponseEntity<>(userList, HttpStatus.OK);
-    }
+//    @GetMapping("/listSearchName")
+////    public ResponseEntity<List<User>> findAll(@RequestParam String name){
+////
+////    }
     @GetMapping("/list")
     public ResponseEntity<List<User>> findAll(){
         List<User> userList = userServices.findAll();
@@ -55,7 +50,7 @@ public class UserController {
     }
 
     @GetMapping("/{name}")
-    public ResponseEntity<User> detail(@PathVariable String name){
+    public ResponseEntity<User> getUserByName(@PathVariable String name){
         User user = userServices.findByUsername(name);
         if (user == null) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -75,13 +70,12 @@ public class UserController {
         userServices.save(foundUser);
         return new ResponseEntity<>(foundUser,HttpStatus.OK);
     }
-    @DeleteMapping("/{name}")
-    public ResponseEntity<User> delete(@PathVariable String name){
-        User foundUser = userServices.findByUsername(name);
-        if(foundUser == null){
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deletePerson(@RequestParam("personId") Long personId){
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(userServices.deleteUser(personId));
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
-        userServices.delete(name);
-        return new ResponseEntity<>(foundUser,HttpStatus.NO_CONTENT);
     }
 }

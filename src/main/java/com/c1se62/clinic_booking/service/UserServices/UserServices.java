@@ -16,8 +16,5 @@ public interface UserServices {
     List<User> findAll();
     void save(User User);
     User findByUsername(String username);
-
-    List<User> findUserByNameContaining(String name);
-
-    void delete(String username);
+    String deleteUser(Long id) throws Exception;
 }

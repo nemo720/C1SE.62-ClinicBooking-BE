@@ -19,14 +19,14 @@ public class AuthController {
     @Autowired
     private UserServices userServices;
     @Autowired
-    private AuthenticationServices authenticationService;
+    private AuthenticationServices authenticationServices;
     @PostMapping("/register")
     public UserResponse registerUser(@RequestBody RegisterRequest request) {
             return userServices.register(request);
     }
     @PostMapping("/login")
     AuthenticationResponse authenticate(@RequestBody LoginRequest authenticationRequest) {
-        AuthenticationResponse result = authenticationService.authenticated(authenticationRequest);
+        AuthenticationResponse result = authenticationServices.authenticated(authenticationRequest);
 return result;
     }
 }

@@ -41,7 +41,6 @@ public class UserServicesImpl implements UserServices {
     public List<User> findAll() {
         return userRepository.findAll();
     }
-
     @Override
     public void save(User user) {
         userRepository.save(user);
@@ -53,13 +52,12 @@ public class UserServicesImpl implements UserServices {
     }
 
     @Override
-    public List<User> findUserByNameContaining(String name) {
-        return userRepository.findUserByNameContaining(name);
-    }
-
-
-    @Override
-    public void delete(String username) {
-        userRepository.deleteByUsername(username);
+    public String deleteUser(Long id) throws Exception {
+        try{
+            userRepository.deleteById(id);
+            return "delete is successful";
+        }catch (Exception e){
+            throw new Exception(e.getMessage());
+        }
     }
 }
