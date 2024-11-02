@@ -1,15 +1,22 @@
 package com.c1se62.clinic_booking.entity;
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
+import com.c1se62.clinic_booking.entity.Appointment;
+import com.c1se62.clinic_booking.entity.Doctor;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalTime;
 import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+
+
 
 @Entity
+@Table(name = "TimeSlots")
 @Getter
 @Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class TimeSlot {
@@ -24,14 +31,19 @@ public class TimeSlot {
     private Doctor doctor;
 
     @Column(name = "time_start", nullable = false)
-    private String timeStart;
+    private LocalTime timeStart;
 
     @Column(name = "time_end", nullable = false)
-    private String timeEnd;
+    private LocalTime timeEnd;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private String status;
+    private TimeSlotStatus status;
 
-    @OneToMany(mappedBy = "timeSlot", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "timeSlot", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
     private Set<Appointment> appointments;
+
+    public enum TimeSlotStatus {
+        AVAILABLE, BOOKED, CANCELLED
+    }
 }

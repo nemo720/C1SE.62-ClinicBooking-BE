@@ -9,9 +9,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface DoctorRepository extends JpaRepository<Doctor, Long> {
-//    boolean existsByUsername(String username);
-//    Optional<Doctor> findByUsername(String username);
-//    List<Doctor> findUserByNameContaining(String name);
-//    void deleteByUsername(String username);
+public interface DoctorRepository extends JpaRepository<Doctor, Integer> {
+
 }

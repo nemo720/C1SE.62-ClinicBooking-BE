@@ -5,7 +5,7 @@ spring:
     password: Kien2003#
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
 
 server:

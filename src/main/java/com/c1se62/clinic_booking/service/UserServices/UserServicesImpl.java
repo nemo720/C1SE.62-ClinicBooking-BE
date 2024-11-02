@@ -33,31 +33,5 @@ public class UserServicesImpl implements UserServices {
         user.setRole(roles);
         return userMapper.toUserResponse(userRepository.save(user));
     }
-    @Override
-    public String logout(String refreshToken) throws Exception {
-        return "";
-    }
-    @Override
-    public List<User> findAll() {
-        return userRepository.findAll();
-    }
-    @Override
-    public void save(User user) {
-        userRepository.save(user);
-    }
 
-    @Override
-    public User findByUsername(String username) {
-        return userRepository.findByUsername(username).orElse(null);
-    }
-
-    @Override
-    public String deleteUser(Long id) throws Exception {
-        try{
-            userRepository.deleteById(id);
-            return "delete is successful";
-        }catch (Exception e){
-            throw new Exception(e.getMessage());
-        }
-    }
 }

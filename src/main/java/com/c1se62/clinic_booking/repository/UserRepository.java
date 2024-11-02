@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByUsername(String username);
     Optional<User> findByUsername(String username);
-    void deleteByUserId(Long id);
-    Optional<User> findById(Long id);
-
+    void deleteByUserId(Integer id);
+    Optional<User> findById(Integer id);
+    void deleteById(Integer id);
 }

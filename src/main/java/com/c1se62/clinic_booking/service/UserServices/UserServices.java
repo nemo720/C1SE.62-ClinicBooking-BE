@@ -12,9 +12,5 @@ import java.util.List;
 @Service
 public interface UserServices {
     UserResponse register(RegisterRequest request) ;
-    String logout(String refreshToken) throws Exception;
-    List<User> findAll();
-    void save(User User);
-    User findByUsername(String username);
-    String deleteUser(Long id) throws Exception;
+
 }

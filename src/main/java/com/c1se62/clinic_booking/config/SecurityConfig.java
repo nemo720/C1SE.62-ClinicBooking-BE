@@ -26,7 +26,9 @@ public class SecurityConfig {
     @Value("${jwt.signerKey}")
     private String signerKey;
     private final String[] PUBLIC_ENDPOINTS = {"/api/auth","/api/auth/register","/api/auth/login","/api/auth/logout"
+,"/api/user/booking"
     };
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeHttpRequests(request ->
