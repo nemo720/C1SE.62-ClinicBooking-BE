@@ -12,7 +12,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChatbotResponse {
+public class Chatbot {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

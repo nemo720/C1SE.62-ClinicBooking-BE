@@ -21,11 +21,12 @@ public class TimeSlotServicesImpl implements TimeSlotServices{
         LocalTime startTime = LocalTime.parse("00:00:00"); // Assuming your TimeSlots have time in this format
         LocalTime endTime = LocalTime.parse("23:59:59");
         List<TimeSlot> t =  timeSlotRepository.findByDoctorIdAndDateAndStatus(
-                doctorId, startTime, endTime, TimeSlot.TimeSlotStatus.AVAILABLE);
+                doctorId, startTime, endTime,TimeSlot.TimeSlotStatus.AVAILABLE);
         List<TimeslotResponse> res = t.stream()
                 .map(timeSlot -> {
                     TimeslotResponse timeslotResponse = new TimeslotResponse();
                     timeslotResponse.setTimeSlotId(timeSlot.getTimeSlotId());
+                    timeslotResponse.setDate(timeSlot.getDate());
                     timeslotResponse.setTimeStart(timeSlot.getTimeStart());
                     timeslotResponse.setTimeEnd(timeSlot.getTimeEnd());
                     return timeslotResponse;

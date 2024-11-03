@@ -32,16 +32,16 @@ public class AppointmentServicesImpl implements AppointmentServices{
     @Autowired
     private DoctorRepository doctorRepository;
     @Override
-    public String addAppointment(AppointmentRequest appointment) {
-        if (appointment.getDoctorId() == null || appointment.getPatientId() == null || appointment.getTimeSlotId() == null ||
-                appointment.getBookingDate() == null || appointment.getAppointmentType() == null) {
+    public String addAppointment(AppointmentRequest appointment,User user) {
+        if (appointment.getDoctorId() == null ||  appointment.getTimeStart() == null ||
+                appointment.getBookingDate() == null) {
             try {
                 throw new BadRequestException("Invalid appointment request: missing required fields.");
             } catch (BadRequestException e) {
                 throw new RuntimeException(e);
             }
         }
-        Optional<TimeSlot> timeSlotOptional = timeSlotRepository.findById(appointment.getTimeSlotId());
+        Optional<TimeSlot> timeSlotOptional = timeSlotRepository.findByDoctorIdAndDateAndTimeStart(appointment.getDoctorId(), appointment.getTimeStart(), appointment.getBookingDate());
         if (timeSlotOptional.isEmpty()) {
             try {
                 throw new BadRequestException("Invalid time slot ID.");
@@ -58,16 +58,6 @@ public class AppointmentServicesImpl implements AppointmentServices{
                 throw new RuntimeException(e);
             }
         }
-        Optional<User> patientOptional = userRepository.findById(appointment.getPatientId());
-        if (patientOptional.isEmpty()) {
-            try {
-                throw new BadRequestException("Người dùng không tồn tại");
-            } catch (BadRequestException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        User patient = patientOptional.get();
-
         Optional<Doctor> doctorOptional = doctorRepository.findById(appointment.getDoctorId());
         if (doctorOptional.isEmpty()) {
             try {
@@ -77,9 +67,10 @@ public class AppointmentServicesImpl implements AppointmentServices{
             }
         }
         Doctor doctor = doctorOptional.get();
+
         Appointment newAppointment = appointmentMapper.toAppointment(appointment);
         newAppointment.setDoctor(doctor);
-        newAppointment.setPatient(patient);
+        newAppointment.setUser(user);
         newAppointment.setTimeSlot(timeSlot);
         Appointment savedAppointment = appointmentRepository.save(newAppointment);
         timeSlot.setStatus(TimeSlot.TimeSlotStatus.BOOKED);

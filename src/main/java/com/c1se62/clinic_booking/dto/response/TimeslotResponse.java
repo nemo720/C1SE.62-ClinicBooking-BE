@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Data
@@ -13,6 +14,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 public class TimeslotResponse {
     private Integer timeSlotId;
+    private LocalDate date;
     private LocalTime timeEnd;
     private LocalTime timeStart;
 }

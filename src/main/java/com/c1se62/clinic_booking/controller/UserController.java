@@ -2,6 +2,7 @@ package com.c1se62.clinic_booking.controller;
 
 import com.c1se62.clinic_booking.dto.request.AppointmentRequest;
 import com.c1se62.clinic_booking.entity.User;
+import com.c1se62.clinic_booking.repository.UserRepository;
 import com.c1se62.clinic_booking.service.AppointmentServices.AppointmentServices;
 import com.c1se62.clinic_booking.service.AuthenticationServices.AuthenticationServices;
 import com.c1se62.clinic_booking.service.UserServices.UserServices;
@@ -12,6 +13,8 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,13 +29,17 @@ public class UserController {
     private AuthenticationServices authenticationService;
     @Autowired
     private AppointmentServices appointmentServices;
-
+    @Autowired
+    private UserRepository userRepository;
     @PostMapping("/booking")
     public ResponseEntity<String> addBooking(@RequestBody AppointmentRequest appointmentRequest) {
         try{
             Authentication authentication= SecurityContextHolder.getContext().getAuthentication();
             if(!(authentication instanceof AnonymousAuthenticationToken)){
-                appointmentServices.addAppointment(appointmentRequest);
+                Jwt jwt = ((JwtAuthenticationToken) authentication).getToken();
+                String userIdStr = jwt.getClaim("sub");
+                User user = userRepository.findByUsername(userIdStr).orElse(null);
+                appointmentServices.addAppointment(appointmentRequest,user);
                 return ResponseEntity.status(HttpStatus.OK).body("Đặt lịch khám thành công");
             }else{
                 return ResponseEntity.status(403).body("You must login");

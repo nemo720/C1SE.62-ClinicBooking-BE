@@ -7,6 +7,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface AppointmentServices {
-    String addAppointment(AppointmentRequest appointment);
+    String addAppointment(AppointmentRequest appointment,User user);
 
 }
