@@ -14,7 +14,7 @@ import java.util.Set;
 @Setter
 public class RegisterRequest {
     @NotNull(message = "Vui lòng nhập mật khẩu và tên đăng nhập")
-    @Size(min = 3, message = "Mật khẩu phải ít nhất 3 kí tự")
+    @Size(min = 3, message = "Tên đăng nhập phải ít nhất 3 kí tự")
     private String username;
     @NotNull(message = "Vui lòng nhập mật khẩu và tên đăng nhập")
     @Size(min = 8, message = "mật khẩu phải ít nhất 8 kí tự")

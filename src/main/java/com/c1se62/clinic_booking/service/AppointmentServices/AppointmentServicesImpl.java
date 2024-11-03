@@ -79,4 +79,5 @@ public class AppointmentServicesImpl implements AppointmentServices{
         timeSlotRepository.save(timeSlot);
         return "Appointment created successfully! Appointment ID: " + savedAppointment.getAppointmentId();
     }
+
 }
