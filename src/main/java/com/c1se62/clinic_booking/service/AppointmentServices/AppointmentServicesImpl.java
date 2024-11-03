@@ -68,10 +68,12 @@ public class AppointmentServicesImpl implements AppointmentServices{
         }
         Doctor doctor = doctorOptional.get();
 
-        Appointment newAppointment = appointmentMapper.toAppointment(appointment);
+        Appointment newAppointment = new Appointment();
         newAppointment.setDoctor(doctor);
         newAppointment.setUser(user);
         newAppointment.setTimeSlot(timeSlot);
+        newAppointment.setAppointmentType("Khám bệnh");
+        newAppointment.setStatus("Đang xử lí");
         Appointment savedAppointment = appointmentRepository.save(newAppointment);
         timeSlot.setStatus(TimeSlot.TimeSlotStatus.BOOKED);
         timeSlotRepository.save(timeSlot);
