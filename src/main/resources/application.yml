@@ -7,7 +7,17 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-
+  mail:
+    host: smtp.sendgrid.net
+    port: 587
+    username: apikey  # Dùng "apikey" thay cho tên người dùng
+    password:   # Thay bằng API Key của bạn
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 server:
   port: 8081
   servlet:
