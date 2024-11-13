@@ -1,5 +1,6 @@
 package com.c1se62.clinic_booking.service.DoctorServices;
 
+import com.c1se62.clinic_booking.dto.request.DoctorRequest;
 import com.c1se62.clinic_booking.dto.response.DoctorRatingResponse;
 import com.c1se62.clinic_booking.dto.response.DoctorResponse;
 import com.c1se62.clinic_booking.entity.Department;
@@ -106,6 +107,25 @@ public class DoctorServicesImpl implements DoctorServices {
                     return response;
                 })
                 .orElseThrow(() -> new Exception("Doctor not found with id: " + id));
+    }
+
+
+    @Override
+    public String updateDoctor(DoctorRequest doctorRequest, Integer doctorId) {
+        Optional<Doctor> existingDoctor = doctorRepository.findById(doctorId);
+        if (existingDoctor.isPresent()) {
+            Doctor d = existingDoctor.get();
+            d.getUser().setUsername(doctorRequest.getDoctorName());
+            d.getUser().setFirstName(doctorRequest.getFirstName());
+            d.getUser().setLastName(doctorRequest.getLastName());
+            d.getUser().setEmail(doctorRequest.getEmail());
+            d.getUser().setPhoneNumber(doctorRequest.getPhoneNumber());
+            d.getUser().setDateOfBirth(doctorRequest.getDateOfBirth());
+            doctorRepository.save(d);
+            return "Update doctor successfully";
+        } else {
+            return "Doctor not found";
+        }
     }
 
     @Override
