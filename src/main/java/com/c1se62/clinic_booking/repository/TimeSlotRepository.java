@@ -21,7 +21,7 @@ public interface TimeSlotRepository extends JpaRepository<TimeSlot, Integer> {
                                                   @Param("endDate") LocalTime endDate,
                                                   @Param("status") TimeSlot.TimeSlotStatus status);
     @Query("SELECT ts FROM TimeSlot ts WHERE ts.doctor.doctorId = :doctorId " +
-            "AND ts.timeStart >= :startDate AND ts.date <= :Date ")
+            "AND ts.timeStart <= :startDate AND ts.timeEnd >= :startDate AND ts.date <= :Date ")
     Optional<TimeSlot> findByDoctorIdAndDateAndTimeStart(@Param("doctorId") Integer doctorId,
                                                          @Param("startDate") LocalTime startDate,
                                                          @Param("Date") LocalDate Date

@@ -2,6 +2,7 @@ package com.c1se62.clinic_booking.service.UserServices;
 
 import com.c1se62.clinic_booking.dto.request.ForgotPasswordRequest;
 import com.c1se62.clinic_booking.dto.request.RegisterRequest;
+import com.c1se62.clinic_booking.dto.request.UserRequest;
 import com.c1se62.clinic_booking.dto.response.UserResponse;
 import com.c1se62.clinic_booking.emuns.ERole;
 import com.c1se62.clinic_booking.entity.User;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserServicesImpl implements UserServices {
@@ -54,5 +56,31 @@ public class UserServicesImpl implements UserServices {
         // Nếu mật khẩu cũ không đúng
         return "Mật khẩu cũ không đúng";
     }
+
+    @Override
+    public String updateUser(UserRequest userRequest,Integer userId) {
+        Optional<User> existingUser = userRepository.findById(userId);
+        if (existingUser.isPresent()) {
+            User user = existingUser.get();
+            user.setFirstName(userRequest.getFirstName());
+            user.setLastName(userRequest.getLastName());
+            user.setEmail(userRequest.getEmail());
+            user.setPhoneNumber(userRequest.getPhoneNumber());
+            user.setDateOfBirth(userRequest.getDateOfBirth());
+            user.setAddress(userRequest.getAddress());
+            user.setCity(userRequest.getCity());
+            user.setState(userRequest.getState());
+            user.setCountry(userRequest.getCountry());
+            user.setBloodgroup(Optional.ofNullable(userRequest.getBloodgroup()).orElse(user.getBloodgroup()));
+            user.setZip(Optional.ofNullable(userRequest.getZip()).orElse(user.getZip()));
+
+            userRepository.save(user);
+
+            return "Cập nhật thông tin người dùng thành công";
+        } else {
+            return "Người dùng không tồn tại";
+        }
+    }
+
 
 }

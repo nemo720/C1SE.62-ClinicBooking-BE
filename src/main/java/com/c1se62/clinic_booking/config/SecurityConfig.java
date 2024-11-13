@@ -25,7 +25,7 @@ public class SecurityConfig {
 
     @Value("${jwt.signerKey}")
     private String signerKey;
-    private final String[] PUBLIC_ENDPOINTS = {"/api/**"
+    private final String[] PUBLIC_ENDPOINTS = {"/**"
     };
 
     @Bean
