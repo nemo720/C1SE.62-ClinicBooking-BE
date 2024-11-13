@@ -1,13 +1,24 @@
 package com.c1se62.clinic_booking.controller;
 
+import com.c1se62.clinic_booking.dto.request.DoctorRequest;
+import com.c1se62.clinic_booking.dto.request.UserRequest;
 import com.c1se62.clinic_booking.dto.response.DoctorRatingResponse;
 import com.c1se62.clinic_booking.dto.response.DoctorResponse;
 import com.c1se62.clinic_booking.dto.response.TimeslotResponse;
+import com.c1se62.clinic_booking.entity.Doctor;
+import com.c1se62.clinic_booking.entity.User;
+import com.c1se62.clinic_booking.repository.DoctorRepository;
 import com.c1se62.clinic_booking.service.DoctorServices.DoctorServices;
 import com.c1se62.clinic_booking.service.TimeSlotServices.TimeSlotServices;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -22,6 +33,8 @@ public class DoctorController {
 
     @Autowired
     private DoctorServices doctorServices;
+    @Autowired
+    private DoctorRepository doctorRepository;
 
     @GetMapping("/{doctorId}/timeslot/{date}")
     public ResponseEntity<List<TimeslotResponse>> getAvailableTimeSlots(
@@ -74,6 +87,35 @@ public class DoctorController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(ratings, HttpStatus.OK);
+    }
+
+    @PutMapping("/updateDoctor")
+    public ResponseEntity<String> updateDoctor(@RequestBody @Valid DoctorRequest doctorRequest) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (!(authentication instanceof AnonymousAuthenticationToken)) {
+                Jwt jwt = ((JwtAuthenticationToken) authentication).getToken();
+                int doctorIdStr = jwt.getClaim("sub");
+                Doctor doctor = doctorRepository.findById(doctorIdStr).orElse(null);
+
+                if (doctor == null) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Bác sĩ không tồn tại");
+                }
+
+                // Gọi service để cập nhật thông tin Bác sĩ
+                String responseMessage = doctorServices.updateDoctor(doctorRequest,doctor.getDoctorId());
+
+                if (responseMessage.equals("Cập nhật thông tin bác sĩ thành công")) {
+                    return ResponseEntity.ok().body(responseMessage);
+                } else {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseMessage);
+                }
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Bạn cần đăng nhập để thực hiện thao tác này");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while updating doctor: " + e.getMessage());
+        }
     }
 
 }
