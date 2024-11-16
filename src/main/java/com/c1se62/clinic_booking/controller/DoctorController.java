@@ -118,4 +118,10 @@ public class DoctorController {
         }
     }
 
+    @GetMapping("/appointment/{appointmentId}/{status}")
+    public ResponseEntity<?> changeBookingStatus (@PathVariable int appointmentId, @PathVariable String status) {
+        boolean success = doctorServices.changeBookingStatus(appointmentId, status);
+        if (success) return ResponseEntity.ok().build();
+        return ResponseEntity.notFound().build();
+    }
 }

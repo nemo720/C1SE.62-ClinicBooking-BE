@@ -3,9 +3,11 @@ package com.c1se62.clinic_booking.service.DoctorServices;
 import com.c1se62.clinic_booking.dto.request.DoctorRequest;
 import com.c1se62.clinic_booking.dto.response.DoctorRatingResponse;
 import com.c1se62.clinic_booking.dto.response.DoctorResponse;
+import com.c1se62.clinic_booking.entity.Appointment;
 import com.c1se62.clinic_booking.entity.Department;
 import com.c1se62.clinic_booking.entity.Doctor;
 import com.c1se62.clinic_booking.entity.DoctorRating;
+import com.c1se62.clinic_booking.repository.AppointmentRepository;
 import com.c1se62.clinic_booking.repository.DepartmentRepository;
 import com.c1se62.clinic_booking.repository.DoctorRatingRepository;
 import com.c1se62.clinic_booking.repository.DoctorRepository;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -25,6 +28,9 @@ public class DoctorServicesImpl implements DoctorServices {
     private DoctorRatingRepository doctorRatingRepository;
     @Autowired
     private DepartmentRepository departmentRepository;
+    @Autowired
+    private AppointmentRepository appointmentRepository;
+
     @Override
     public List<DoctorResponse> getAllDoctors() throws Exception {
         List<Doctor> doctors = doctorRepository.getAllDoctor();
@@ -136,5 +142,19 @@ public class DoctorServicesImpl implements DoctorServices {
                 .collect(Collectors.toList());
     }
 
-
+    @Override
+    public boolean changeBookingStatus(int appointmentId, String status){
+        Optional<Appointment> Appointment = appointmentRepository.findById(appointmentId);
+        if (Appointment.isPresent()){
+            Appointment existingAppointment = Appointment.get();
+            if(Objects.equals(status, "Approve")){
+                existingAppointment.setStatus("Approved");
+            }else{
+                existingAppointment.setStatus("Rejected");
+            }
+            appointmentRepository.save(existingAppointment);
+            return true;
+        }
+        return false;
+    }
 }

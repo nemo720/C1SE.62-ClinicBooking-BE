@@ -16,5 +16,6 @@ public interface DoctorServices {
     String updateDoctor(DoctorRequest doctorRequest, Integer doctorId);
 
     List<DoctorRatingResponse> getRatingsByDoctorId(int doctorId);
-    String updateUser(UserRequest user, Integer userId);
+
+    boolean changeBookingStatus(int appointmentId, String status);
 }
