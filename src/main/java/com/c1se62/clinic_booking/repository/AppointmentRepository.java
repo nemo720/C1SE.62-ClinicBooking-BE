@@ -2,6 +2,7 @@ package com.c1se62.clinic_booking.repository;
 
 import com.c1se62.clinic_booking.entity.Appointment;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -14,7 +15,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
             "AND a.doctor.doctorId = :doctorId " +
             "AND a.status = :status")
     boolean existsByUserIdAndDoctorIdAndStatus(Integer userId, Integer doctorId, String status);
-
+    @Modifying
+    void deleteByUserUserId(Integer userId);
 
 
 }

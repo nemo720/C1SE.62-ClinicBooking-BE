@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -17,4 +18,5 @@ public class TimeslotResponse {
     private LocalDate date;
     private LocalTime timeEnd;
     private LocalTime timeStart;
+    private DayOfWeek dayOfWeek;
 }

@@ -35,4 +35,5 @@ public class Doctor {
 
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Appointment> appointments;
+
 }

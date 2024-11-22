@@ -1,10 +1,9 @@
 package com.c1se62.clinic_booking.controller;
 
 import com.c1se62.clinic_booking.dto.DoctorRatingDTO;
-import com.c1se62.clinic_booking.dto.request.AppointmentRequest;
-import com.c1se62.clinic_booking.dto.request.ForgotPasswordRequest;
-import com.c1se62.clinic_booking.dto.request.RatingRequest;
-import com.c1se62.clinic_booking.dto.request.UserRequest;
+import com.c1se62.clinic_booking.dto.request.*;
+import com.c1se62.clinic_booking.dto.response.ChatGptResponse;
+import com.c1se62.clinic_booking.dto.response.UserResponse;
 import com.c1se62.clinic_booking.entity.DoctorRating;
 import com.c1se62.clinic_booking.entity.User;
 import com.c1se62.clinic_booking.repository.UserRepository;
@@ -14,7 +13,9 @@ import com.c1se62.clinic_booking.service.DoctorRatingServices.DoctorRatingServic
 import com.c1se62.clinic_booking.service.Email.EmailService;
 import com.c1se62.clinic_booking.service.UserServices.UserServices;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -25,22 +26,21 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @RestController
 @CrossOrigin("*")
 @RequestMapping("/api/user")
+@AllArgsConstructor
 public class UserController {
-    @Autowired
     UserServices userServices;
-    @Autowired
-    private AuthenticationServices authenticationService;
-    @Autowired
     private AppointmentServices appointmentServices;
-    @Autowired
     private UserRepository userRepository;
-    @Autowired
     private DoctorRatingService doctorRatingService;
 
     @PostMapping("/booking")
@@ -145,6 +145,48 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi hệ thống: " + e.getMessage());
         }
+    }
+    @GetMapping("/admin/all")
+    public ResponseEntity<Map<String, Object>> getAllUsers(
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "userId") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        List<UserResponse> users = userServices.getAllUsers(pageNo, pageSize, sortBy, sortDir);
+        Map<String, Object> response = new HashMap<>();
+        response.put("users", users);
+        response.put("currentPage", pageNo);
+        response.put("pageSize", pageSize);
+        response.put("sortBy", sortBy);
+        response.put("sortDirection", sortDir);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/admin/{id}")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Integer id) {
+        return ResponseEntity.ok(userServices.getUserById(id));
+    }
+
+    @PutMapping("/admin/{id}/roles")
+    public ResponseEntity<Boolean> changeUserRoles(
+            @PathVariable Integer id,
+            @RequestBody Set<String> newRoles) {
+        userServices.changeUserRole(id, newRoles);
+        return ResponseEntity.ok(true);
+    }
+
+    @PutMapping("/admin/{id}/status")
+    public ResponseEntity<Boolean> toggleUserStatus(
+            @PathVariable Integer id,
+            @RequestParam boolean isActive) {
+        userServices.toggleUserStatus(id, isActive);
+        return ResponseEntity.ok(true);
+    }
+
+    @DeleteMapping("/admin/{id}")
+    public ResponseEntity<Boolean> deleteUser(@PathVariable Integer id) {
+        userServices.deleteUser(id);
+        return ResponseEntity.ok(true);
     }
 
 }

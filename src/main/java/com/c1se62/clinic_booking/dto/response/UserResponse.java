@@ -21,6 +21,7 @@ public class UserResponse {
     private String firstName;
     private String lastName;
     private String email;
+    private Boolean isActive;
     private String phoneNumber;
     @ElementCollection
     private Set<String> roles;

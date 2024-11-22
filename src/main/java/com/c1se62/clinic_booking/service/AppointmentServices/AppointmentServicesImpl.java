@@ -1,39 +1,37 @@
 package com.c1se62.clinic_booking.service.AppointmentServices;
 
 import com.c1se62.clinic_booking.dto.request.AppointmentRequest;
-import com.c1se62.clinic_booking.entity.Appointment;
-import com.c1se62.clinic_booking.entity.Doctor;
-import com.c1se62.clinic_booking.entity.TimeSlot;
-import com.c1se62.clinic_booking.entity.User;
+import com.c1se62.clinic_booking.dto.request.PrescriptionCreateDTO;
+import com.c1se62.clinic_booking.entity.*;
+import com.c1se62.clinic_booking.exception.APIException;
+import com.c1se62.clinic_booking.exception.ResourceNotFoundException;
 import com.c1se62.clinic_booking.mapper.AppointmentMapper;
-import com.c1se62.clinic_booking.repository.AppointmentRepository;
-import com.c1se62.clinic_booking.repository.DoctorRepository;
-import com.c1se62.clinic_booking.repository.TimeSlotRepository;
-import com.c1se62.clinic_booking.repository.UserRepository;
+import com.c1se62.clinic_booking.repository.*;
 import com.c1se62.clinic_booking.service.Email.EmailService;
+import com.c1se62.clinic_booking.service.SecurityServices.SecurityService;
 import jakarta.mail.MessagingException;
+import lombok.AllArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class AppointmentServicesImpl implements AppointmentServices{
-    @Autowired
-    AppointmentMapper appointmentMapper;
-    @Autowired
-    private AppointmentRepository appointmentRepository;
-
-    @Autowired
-    private TimeSlotRepository timeSlotRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private DoctorRepository doctorRepository;
-    @Autowired
-    private EmailService emailService;
+    AppointmentRepository appointmentRepository;
+    TimeSlotRepository timeSlotRepository;
+    DoctorRepository doctorRepository;
+    EmailService emailService;
+    MedicineRepository medicineRepository;
+    UserRepository userRepository;
+    SecurityService securityService;
     @Override
     public String addAppointment(AppointmentRequest appointment,User user) {
         if (appointment.getDoctorId() == null ||  appointment.getTimeStart() == null ||
@@ -126,4 +124,37 @@ public class AppointmentServicesImpl implements AppointmentServices{
         return "Appointment created successfully! Appointment ID: " + savedAppointment.getAppointmentId();
     }
 
+    @Override
+    public boolean addPrescriptions(List<PrescriptionCreateDTO> prescriptions, Integer appointmentId) {
+        if (!securityService.hasRole("ROLE_DOCTOR"))
+            throw new APIException(HttpStatus.FORBIDDEN, "You are not allowed to add prescriptions.");
+        User user = securityService.getCurrentUser();
+        Appointment appointment = appointmentRepository.findById(appointmentId).orElseThrow(
+                () -> new ResourceNotFoundException("Appointment", "Id", appointmentId));
+        if (!appointment.getDoctor().getDoctorId().equals(user.getUserId()))
+            throw new APIException(HttpStatus.FORBIDDEN, "You are not allowed to add prescriptions to this appointment.");
+        if (prescriptions.isEmpty())
+            throw new APIException(HttpStatus.BAD_REQUEST, "Prescription list is empty.");
+        if (!appointment.getStatus().equals("COMPLETED"))
+            throw new APIException(HttpStatus.BAD_REQUEST, "Appointment is not completed yet.");
+        List<Medicine> medicines = medicineRepository.findByIds(prescriptions.stream()
+                .map(PrescriptionCreateDTO::getMedicineId).toList());
+        Map<Integer, Medicine> medicineMap = medicines.stream().collect(
+                Collectors.toMap(Medicine::getMedicineId, medicine -> medicine));
+        if (medicines.size() != prescriptions.size())
+            throw new APIException(HttpStatus.BAD_REQUEST, "Some medicines are not found.");
+        Set<Prescription> prescriptionsList = prescriptions.stream()
+                .map(prescriptionCreateDTO ->
+                        mapToEntity(prescriptionCreateDTO, medicineMap.get(prescriptionCreateDTO.getMedicineId())))
+                .collect(Collectors.toSet());
+        appointment.getPrescriptions().addAll(prescriptionsList);
+        appointmentRepository.save(appointment);
+        return true;
+    }
+    private Prescription mapToEntity(PrescriptionCreateDTO prescriptionCreateDTO, Medicine medicine) {
+        Prescription prescription = new Prescription();
+        prescription.setMedicine(medicine);
+        prescription.setDosage(prescriptionCreateDTO.getDosage());
+        return prescription;
+    }
 }

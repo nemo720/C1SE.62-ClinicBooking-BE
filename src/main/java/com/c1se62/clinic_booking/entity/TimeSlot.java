@@ -1,16 +1,11 @@
 package com.c1se62.clinic_booking.entity;
-
-import com.c1se62.clinic_booking.entity.Appointment;
-import com.c1se62.clinic_booking.entity.Doctor;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Set;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonTypeName;
-
 
 
 @Entity
@@ -31,7 +26,7 @@ public class TimeSlot {
     @JoinColumn(name = "doctor_id")
     private Doctor doctor;
 
-    @Column(name = "date", nullable = false)
+    @Column(name = "date", nullable = true)
     private LocalDate date;
 
     @Column(name = "time_start", nullable = false)
@@ -43,6 +38,9 @@ public class TimeSlot {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private TimeSlotStatus status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "day_of_week", nullable = false)
+    private DayOfWeek dayOfWeek;
 
     @OneToMany(mappedBy = "timeSlot", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
     private Set<Appointment> appointments;
