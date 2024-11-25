@@ -1,52 +1,62 @@
 package com.c1se62.clinic_booking.service.ChatGPTService;
 
+import com.c1se62.clinic_booking.dto.request.ChatRequest;
+import com.c1se62.clinic_booking.dto.response.ApiResponse;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Service
 public class ChatGPTService {
+    @Value("${ai.api.url}")
+    private String apiUrl;
 
-    @Value("${openai.api.key}")
+    @Value("${ai.api.key}")
     private String apiKey;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final WebClient webClient;
 
-    public String getChatGPTResponse(String prompt) {
-        String apiUrl = "https://api.openai.com/v1/chat/completions";
+    public ChatGPTService(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.baseUrl(apiUrl).build();
+    }
 
-        // Tạo dữ liệu yêu cầu
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", "gpt-3.5-turbo");
-        requestBody.put("messages", new Object[]{
-                Map.of("role", "user", "content", prompt)
-        });
+    public String getChatbotResponse(String userMessage) {
+        // Tạo requestBody theo định dạng yêu cầu của API
+        String requestBody = String.format("""
+            {
+                "contents": [{
+                    "parts": [{
+                        "text": "%s"
+                    }]
+                }]
+            }
+            """,userMessage);
 
-        // Tạo header cho yêu cầu
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(apiKey);
+        try {
+            // Gửi yêu cầu tới API
+            ApiResponse apiResponse = webClient.post()
+                    .uri(apiUrl + "?key=" + apiKey)
+                    .header("Content-Type", "application/json")
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(ApiResponse.class) // Ánh xạ trực tiếp vào ApiResponse
+                    .block();
 
-        // Tạo đối tượng HttpEntity
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+            // Trích xuất phần "text" từ response
+            if (apiResponse != null && apiResponse.getCandidates() != null && !apiResponse.getCandidates().isEmpty()) {
+                ApiResponse.Candidate candidate = apiResponse.getCandidates().get(0);
+                if (candidate.getContent() != null && candidate.getContent().getParts() != null && !candidate.getContent().getParts().isEmpty()) {
+                    return candidate.getContent().getParts().get(0).getText(); // Trả về phần "text"
+                }
+            }
 
-        // Gửi yêu cầu POST đến API của OpenAI
-        Map<String, Object> response = restTemplate.exchange(apiUrl, HttpMethod.POST, entity, Map.class).getBody();
+            return "Không có câu trả lời từ chatbot."; // Trả về thông báo nếu không có kết quả.
 
-        // Kiểm tra và trả về phản hồi
-        if (response != null && response.containsKey("choices")) {
-            Map<String, Object> choice = (Map<String, Object>) ((List<?>) response.get("choices")).get(0);
-            return (String) ((Map<String, Object>) choice.get("message")).get("content");
-        } else {
-            return "Không nhận được phản hồi từ ChatGPT.";
+        } catch (WebClientResponseException e) {
+            return "Lỗi khi gọi API: " + e.getMessage(); // Xử lý lỗi WebClient
+        } catch (Exception e) {
+            return "Đã xảy ra lỗi: " + e.getMessage(); // Xử lý lỗi chung
         }
     }
 }

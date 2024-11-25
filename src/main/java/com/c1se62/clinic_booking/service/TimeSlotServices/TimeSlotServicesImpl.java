@@ -22,12 +22,19 @@ public class TimeSlotServicesImpl implements TimeSlotServices{
     private TimeSlotRepository timeSlotRepository;
     @Override
     public List<TimeslotResponse> getAvailableTimeSlots(Integer doctorId) {
-        LocalDate localDate = LocalDate.now();
-        LocalTime startTime = LocalTime.parse("00:00:00"); // Assuming your TimeSlots have time in this format
-        LocalTime endTime = LocalTime.parse("23:59:59");
-        List<TimeSlot> t =  timeSlotRepository.findByDoctorIdAndDateAndStatus(
-                doctorId, startTime, endTime,TimeSlot.TimeSlotStatus.AVAILABLE,localDate);
-        List<TimeslotResponse> res = t.stream()
+        // Lấy ngày hiện tại
+        LocalDate today = LocalDate.now();
+
+        // Xác định ngày bắt đầu (Thứ Hai) và ngày kết thúc (Chủ Nhật) của tuần hiện tại
+        LocalDate startOfWeek = today.with(java.time.DayOfWeek.MONDAY);
+        LocalDate endOfWeek = today.with(java.time.DayOfWeek.SUNDAY);
+
+        // Lấy danh sách TimeSlot từ Repository
+        List<TimeSlot> timeSlots = timeSlotRepository.findByDoctorIdAndDateAndStatus(
+                doctorId, startOfWeek, endOfWeek, TimeSlot.TimeSlotStatus.AVAILABLE);
+
+        // Chuyển đổi sang DTO
+        return timeSlots.stream()
                 .map(timeSlot -> {
                     TimeslotResponse timeslotResponse = new TimeslotResponse();
                     timeslotResponse.setTimeSlotId(timeSlot.getTimeSlotId());
@@ -37,8 +44,6 @@ public class TimeSlotServicesImpl implements TimeSlotServices{
                     return timeslotResponse;
                 })
                 .collect(Collectors.toList());
-
-        return res;
     }
 
     @Override

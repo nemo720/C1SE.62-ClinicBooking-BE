@@ -4,7 +4,6 @@ import com.c1se62.clinic_booking.dto.request.DoctorCreatedDTO;
 import com.c1se62.clinic_booking.dto.request.DoctorRequest;
 import com.c1se62.clinic_booking.dto.request.DoctorUpdatedDTO;
 import com.c1se62.clinic_booking.dto.request.UserRequest;
-import com.c1se62.clinic_booking.dto.response.DoctorDashboardResponse;
 import com.c1se62.clinic_booking.dto.response.DoctorRatingResponse;
 import com.c1se62.clinic_booking.dto.response.DoctorResponse;
 import com.c1se62.clinic_booking.entity.Doctor;

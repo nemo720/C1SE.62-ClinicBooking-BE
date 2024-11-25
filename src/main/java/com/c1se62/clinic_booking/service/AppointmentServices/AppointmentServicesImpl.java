@@ -2,16 +2,18 @@ package com.c1se62.clinic_booking.service.AppointmentServices;
 
 import com.c1se62.clinic_booking.dto.request.AppointmentRequest;
 import com.c1se62.clinic_booking.dto.request.PrescriptionCreateDTO;
-import com.c1se62.clinic_booking.dto.response.DoctorDashboardResponse;
+import com.c1se62.clinic_booking.dto.response.AppointmentDTO;
 import com.c1se62.clinic_booking.entity.*;
 import com.c1se62.clinic_booking.exception.APIException;
 import com.c1se62.clinic_booking.exception.ResourceNotFoundException;
+import com.c1se62.clinic_booking.mapper.AppointmentMapper;
 import com.c1se62.clinic_booking.repository.*;
 import com.c1se62.clinic_booking.service.Email.EmailService;
 import com.c1se62.clinic_booking.service.SecurityServices.SecurityService;
 import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
 import org.apache.coyote.BadRequestException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -152,8 +154,19 @@ public class AppointmentServicesImpl implements AppointmentServices{
     }
 
     @Override
-    public List<DoctorDashboardResponse> getAppointmentsByDoctorId(Integer doctorId) {
-        return appointmentRepository.findAppointmentsByDoctorId(doctorId);
+    public List<AppointmentDTO> getAppointmentsByUserId(Integer userId) {
+        // Lấy danh sách lịch khám từ repository
+        List<Appointment> appointments = appointmentRepository.findByUserId(userId);
+
+        // Chuyển đổi sang DTO
+        return appointments.stream().map(a -> new AppointmentDTO(
+                a.getAppointmentId(),
+                a.getTimeSlot().getDate(),
+                a.getTimeSlot().getTimeStart(),
+                a.getTimeSlot().getTimeEnd(),
+                a.getDoctor().getUser().getFirstName(),
+                a.getStatus().toString()
+        )).collect(Collectors.toList());
     }
 
     private Prescription mapToEntity(PrescriptionCreateDTO prescriptionCreateDTO, Medicine medicine) {

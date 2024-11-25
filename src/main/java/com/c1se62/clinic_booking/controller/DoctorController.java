@@ -99,18 +99,13 @@ public class DoctorController {
                     .body("Lỗi xảy ra trong quá trình tạo khung giờ: " + e.getMessage());
         }
     }
-    @GetMapping("/{doctorId}/timeslot")
-    public ResponseEntity<List<TimeslotResponse>> getAvailableTimeSlots(
-            @PathVariable Integer doctorId) {
+    @GetMapping("/timeslots/{doctorId}")
+    public ResponseEntity<List<TimeslotResponse>> getAvailableTimeSlots(@PathVariable Integer doctorId) {
         try {
-            List<TimeslotResponse> availableTimeSlots = timeSlotServices.getAvailableTimeSlots(doctorId);
-            return ResponseEntity.ok(availableTimeSlots);
-        } catch (IllegalArgumentException e) {
-            // Handle invalid doctorId or date
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            List<TimeslotResponse> timeSlots = timeSlotServices.getAvailableTimeSlots(doctorId);
+            return ResponseEntity.ok(timeSlots);
         } catch (Exception e) {
-            // Handle other exceptions
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while fetching timeslots: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 

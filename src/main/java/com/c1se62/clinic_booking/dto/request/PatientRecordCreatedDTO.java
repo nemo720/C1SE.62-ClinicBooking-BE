@@ -10,11 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PatientRecordCreatedDTO {
-    private Integer recordId;
     private Integer patientId;
     private Integer doctorId;
-    private String recordDate;
     private String diagnosis;
-    private String treatment;
-    private String notes;
+    private String prescription;
+    private String note;
 }

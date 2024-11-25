@@ -13,6 +13,7 @@ import com.c1se62.clinic_booking.repository.DoctorRepository;
 import com.c1se62.clinic_booking.repository.UserRepository;
 import com.c1se62.clinic_booking.service.SecurityServices.SecurityService;
 import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -93,7 +94,7 @@ public class DoctorRatingServiceImpl implements DoctorRatingService{
             throw new APIException(HttpStatus.FORBIDDEN, "You are not allowed to delete this rating.");
         doctorRatingRepository.delete(doctorRating);
     }
-    private DoctorRatingDTO mapToDoctorRatingDTO(DoctorRating doctorRating) {
+    private @NotNull DoctorRatingDTO mapToDoctorRatingDTO(DoctorRating doctorRating) {
         DoctorRatingDTO doctorRatingDTO = new DoctorRatingDTO();
         doctorRatingDTO.setDoctorId(doctorRating.getDoctor().getDoctorId());
         doctorRatingDTO.setPatientId(doctorRating.getPatient().getUserId());
