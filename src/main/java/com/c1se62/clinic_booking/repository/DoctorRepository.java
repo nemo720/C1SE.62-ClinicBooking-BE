@@ -24,4 +24,5 @@ public interface DoctorRepository extends JpaRepository<Doctor, Integer> {
     @Query("SELECT d FROM Doctor d JOIN FETCH d.user " +
             "WHERE d.user.userId = :userId")
     Doctor findByUserId(int userId);
+
 }

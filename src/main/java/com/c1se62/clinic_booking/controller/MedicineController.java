@@ -51,7 +51,7 @@ public class MedicineController {
         return ResponseEntity.ok(medicineService.getMedicineById(id));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<MedicineResponseDTO> updateMedicine(
             @PathVariable Integer id,
             @Valid @RequestBody MedicineUpdatedDTO medicineDTO) {
