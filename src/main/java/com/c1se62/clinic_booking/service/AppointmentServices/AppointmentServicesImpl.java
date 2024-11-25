@@ -3,17 +3,16 @@ package com.c1se62.clinic_booking.service.AppointmentServices;
 import com.c1se62.clinic_booking.dto.request.AppointmentRequest;
 import com.c1se62.clinic_booking.dto.request.PrescriptionCreateDTO;
 import com.c1se62.clinic_booking.dto.response.AppointmentDTO;
+import com.c1se62.clinic_booking.dto.response.DoctorDashboardResponse;
 import com.c1se62.clinic_booking.entity.*;
 import com.c1se62.clinic_booking.exception.APIException;
 import com.c1se62.clinic_booking.exception.ResourceNotFoundException;
-import com.c1se62.clinic_booking.mapper.AppointmentMapper;
 import com.c1se62.clinic_booking.repository.*;
 import com.c1se62.clinic_booking.service.Email.EmailService;
 import com.c1se62.clinic_booking.service.SecurityServices.SecurityService;
 import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
 import org.apache.coyote.BadRequestException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -167,6 +166,12 @@ public class AppointmentServicesImpl implements AppointmentServices{
                 a.getDoctor().getUser().getFirstName(),
                 a.getStatus().toString()
         )).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<DoctorDashboardResponse> getAppointmentsByDoctorId(Integer doctorId) {
+        // Lấy danh sách lịch khám từ repository lên doctor Dashboard
+        return appointmentRepository.findAppointmentsByDoctorId(doctorId);
     }
 
     private Prescription mapToEntity(PrescriptionCreateDTO prescriptionCreateDTO, Medicine medicine) {

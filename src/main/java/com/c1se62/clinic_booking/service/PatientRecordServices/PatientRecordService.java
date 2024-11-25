@@ -8,8 +8,6 @@ import java.util.List;
 public interface PatientRecordService {
     List<PatientRecordResponseDTO> getPatientRecordsByDoctorIdAndPatientId(Integer doctorId, Integer patientId);
 
-    PatientRecordResponseDTO getPatientRecordById(Integer recordId);
-
     List<PatientRecordResponseDTO> getPatientRecordsByPatientId(Integer patientId);
 
     List<PatientRecordResponseDTO> getPatientRecordsByDoctorId(Integer doctorId);
