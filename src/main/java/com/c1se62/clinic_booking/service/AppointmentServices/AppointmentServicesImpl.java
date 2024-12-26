@@ -16,10 +16,7 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -79,6 +76,7 @@ public class AppointmentServicesImpl implements AppointmentServices{
         timeSlot.setStatus(TimeSlot.TimeSlotStatus.BOOKED);
         timeSlotRepository.save(timeSlot);
         String subject = "Xác nhận lịch hẹn khám";
+        String subjects = "Bác sĩ "+ doctor.getUser().getFirstName() +" có một đặt lịch khám";
         String body = "<html>" +
                 "<head>" +
                 "<style>" +
@@ -118,6 +116,8 @@ public class AppointmentServicesImpl implements AppointmentServices{
 
         try {
             emailService.sendHtmlEmail(user.getEmail(), subject, body);
+            emailService.sendHtmlEmail(doctor.getUser().getEmail(), subjects, body);
+
         } catch (MessagingException e) {
             throw new RuntimeException(e);
         }
@@ -126,17 +126,10 @@ public class AppointmentServicesImpl implements AppointmentServices{
 
     @Override
     public boolean addPrescriptions(List<PrescriptionCreateDTO> prescriptions, Integer appointmentId) {
-        if (!securityService.hasRole("ROLE_DOCTOR"))
-            throw new APIException(HttpStatus.FORBIDDEN, "You are not allowed to add prescriptions.");
-        User user = securityService.getCurrentUser();
         Appointment appointment = appointmentRepository.findById(appointmentId).orElseThrow(
                 () -> new ResourceNotFoundException("Appointment", "Id", appointmentId));
-        if (!appointment.getDoctor().getDoctorId().equals(user.getUserId()))
-            throw new APIException(HttpStatus.FORBIDDEN, "You are not allowed to add prescriptions to this appointment.");
         if (prescriptions.isEmpty())
             throw new APIException(HttpStatus.BAD_REQUEST, "Prescription list is empty.");
-        if (!appointment.getStatus().equals("COMPLETED"))
-            throw new APIException(HttpStatus.BAD_REQUEST, "Appointment is not completed yet.");
         List<Medicine> medicines = medicineRepository.findByIds(prescriptions.stream()
                 .map(PrescriptionCreateDTO::getMedicineId).toList());
         Map<Integer, Medicine> medicineMap = medicines.stream().collect(
@@ -144,8 +137,11 @@ public class AppointmentServicesImpl implements AppointmentServices{
         if (medicines.size() != prescriptions.size())
             throw new APIException(HttpStatus.BAD_REQUEST, "Some medicines are not found.");
         Set<Prescription> prescriptionsList = prescriptions.stream()
-                .map(prescriptionCreateDTO ->
-                        mapToEntity(prescriptionCreateDTO, medicineMap.get(prescriptionCreateDTO.getMedicineId())))
+                .map(prescriptionCreateDTO -> {
+                    Prescription prescription = mapToEntity(prescriptionCreateDTO, medicineMap.get(prescriptionCreateDTO.getMedicineId()));
+                    prescription.setAppointment(appointment); // Set the entire Appointment object
+                    return prescription;
+                })
                 .collect(Collectors.toSet());
         appointment.getPrescriptions().addAll(prescriptionsList);
         appointmentRepository.save(appointment);
@@ -160,18 +156,60 @@ public class AppointmentServicesImpl implements AppointmentServices{
         // Chuyển đổi sang DTO
         return appointments.stream().map(a -> new AppointmentDTO(
                 a.getAppointmentId(),
+                a.getDoctor().getDoctorId(),
                 a.getTimeSlot().getDate(),
                 a.getTimeSlot().getTimeStart(),
                 a.getTimeSlot().getTimeEnd(),
                 a.getDoctor().getUser().getFirstName(),
-                a.getStatus().toString()
+                a.getStatus().toString(),
+                a.getUser().getUserId(),
+                a.getUser().getFirstName()+" "+a.getUser().getLastName(),
+                a.getDoctor().getDepartment().getName()
         )).collect(Collectors.toList());
     }
 
     @Override
-    public List<DoctorDashboardResponse> getAppointmentsByDoctorId(Integer doctorId) {
-        // Lấy danh sách lịch khám từ repository lên doctor Dashboard
-        return appointmentRepository.findAppointmentsByDoctorId(doctorId);
+    public List<AppointmentDTO> getAppointmentsByDoctorId(Integer doctorId) {
+        List<Appointment>  appointmentList =appointmentRepository.findAppointmentsByDoctorId(doctorId);
+        List<AppointmentDTO> appointmentDTOList = new ArrayList<>();
+        for (Appointment appointment : appointmentList) {
+            AppointmentDTO appointmentDTO = new AppointmentDTO();
+            appointmentDTO.setAppointmentId(appointment.getAppointmentId());
+            appointmentDTO.setDoctorName(appointment.getDoctor().getUser().getFirstName() + " " + appointment.getDoctor().getUser().getLastName());
+            appointmentDTO.setDate(appointment.getTimeSlot().getDate());
+            appointmentDTO.setTimeStart(appointment.getTimeSlot().getTimeStart());
+            appointmentDTO.setTimeEnd(appointment.getTimeSlot().getTimeEnd());
+            appointmentDTO.setUser(appointment.getUser().getUserId());
+            appointmentDTO.setDoctor(appointment.getDoctor().getDoctorId());
+            appointmentDTO.setName(appointment.getUser().getFirstName()+" "+appointment.getUser().getLastName());
+            appointmentDTO.setStatus(appointment.getStatus());
+
+            appointmentDTOList.add(appointmentDTO);
+
+        }
+        return appointmentDTOList;
+    }
+
+    @Override
+    public List<AppointmentDTO> getAllAppointments() {
+        List<Appointment> appointments = appointmentRepository.findAll();
+        List<AppointmentDTO> appointmentDTOList = new ArrayList<>();
+        for (Appointment appointment : appointments) {
+            AppointmentDTO appointmentDTO = new AppointmentDTO();
+            appointmentDTO.setAppointmentId(appointment.getAppointmentId());
+            appointmentDTO.setDoctorName(appointment.getDoctor().getUser().getFirstName() + " " + appointment.getDoctor().getUser().getLastName());
+            appointmentDTO.setDate(appointment.getTimeSlot().getDate());
+            appointmentDTO.setTimeStart(appointment.getTimeSlot().getTimeStart());
+            appointmentDTO.setTimeEnd(appointment.getTimeSlot().getTimeEnd());
+            appointmentDTO.setUser(appointment.getUser().getUserId());
+            appointmentDTO.setDoctor(appointment.getDoctor().getDoctorId());
+            appointmentDTO.setName(appointment.getUser().getLastName()+" "+appointment.getUser().getFirstName());
+            appointmentDTO.setStatus(appointment.getStatus());
+            appointmentDTO.setDepartment(appointment.getDoctor().getDepartment().getName());
+            appointmentDTOList.add(appointmentDTO);
+
+        }
+        return appointmentDTOList;
     }
 
     private Prescription mapToEntity(PrescriptionCreateDTO prescriptionCreateDTO, Medicine medicine) {
